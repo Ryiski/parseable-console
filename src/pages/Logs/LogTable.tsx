@@ -1,5 +1,5 @@
 import Loading from '@/components/Loading';
-import { Tbody, Th, Thead } from '@/components/Table';
+import { Tbody, Thead } from '@/components/Table';
 import { useGetLogStreamSchema } from '@/hooks/useGetLogStreamSchema';
 import { useQueryLogs } from '@/hooks/useQueryLogs';
 import { Box, Center, Checkbox, Menu, Pagination, ScrollArea, Table, px, ActionIcon, Text } from '@mantine/core';
@@ -15,6 +15,8 @@ import { Field } from '@/@types/parseable/dataType';
 import EmptyBox from '@/components/Empty';
 import { RetryBtn } from '@/components/Button/Retry';
 import LogQuery from './LogQuery';
+import Column from './Column';
+import FilterPills from './FilterPills';
 
 const skipFields = ['p_metadata', 'p_tags'];
 
@@ -33,6 +35,8 @@ const LogTable: FC = () => {
 		error: logStreamSchemaError,
 	} = useGetLogStreamSchema();
 	const {
+		data: logs,
+		getColumnFilters,
 		pageLogData,
 		setQuerySearch,
 		getQueryData,
@@ -42,6 +46,19 @@ const LogTable: FC = () => {
 		error: logsError,
 		resetData: resetLogsData,
 	} = useQueryLogs();
+
+	const appliedFilter = (key: string) => {
+		return subLogSearch.get().filters[key] ?? [];
+	};
+
+	const applyFilter = (key: string, value: string[]) => {
+		subLogSearch.set((state) => {
+			state.filters[key] = value;
+			if (!state.filters[key].length) {
+				delete state.filters[key];
+			}
+		});
+	};
 
 	const isColumnActive = useCallback(
 		(columnName: string) => {
@@ -97,13 +114,20 @@ const LogTable: FC = () => {
 		if (logsSchema) {
 			return logsSchema.fields.map((field) => {
 				if (!isColumnActive(field.name) || skipFields.includes(field.name)) return null;
-
-				return <Th key={field.name} text={field.name} />;
+				return (
+					<Column
+						key={field.name}
+						label={field.name}
+						appliedFilter={appliedFilter}
+						applyFilter={applyFilter}
+						getColumnFilters={getColumnFilters}
+					/>
+				);
 			});
 		}
 
 		return null;
-	}, [logsSchema, columnToggles]);
+	}, [logsSchema, columnToggles, logs]);
 
 	const { classes } = useLogTableStyles();
 
@@ -121,6 +145,7 @@ const LogTable: FC = () => {
 	return (
 		<Box className={container}>
 			{Boolean(pageLogData) && <LogQuery />}
+			<FilterPills />
 			{!(logStreamError || logStreamSchemaError || logsError) ? (
 				!loading && !logsLoading && Boolean(logsSchema) && Boolean(pageLogData) ? (
 					Boolean(logsSchema.fields.length) && Boolean(pageLogData.data.length) ? (

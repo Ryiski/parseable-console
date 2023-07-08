@@ -500,3 +500,61 @@ export const useLogQueryStyles = createStyles((theme) => {
 		},
 	};
 });
+
+export const useTableColumnStyle = createStyles((theme) => {
+	const { spacing, colors, fontSizes, other, primaryColor } = theme;
+	const { fontWeights, widths } = other;
+
+	const pColor = colors[primaryColor];
+
+	return {
+		labelBtn: {
+			width: widths.full,
+			display: 'flex',
+			alignItems: 'center',
+			paddingLeft: spacing.xs,
+			paddingRight: spacing.xs,
+
+			'&:hover': {
+				background: colors.gray[1],
+			},
+		},
+
+		labelIcon: {
+			marginRight: 'auto',
+		},
+
+		labelIconActive: {
+			color: pColor[0],
+		},
+
+		searchInputStyle: {
+			marginBottom: spacing.xs,
+		},
+
+		checkBoxStyle: {
+			height: 35,
+			paddingTop: spacing.xs,
+			paddingBottom: spacing.xxs,
+			fontWeight: fontWeights.medium,
+
+			'& .mantine-Checkbox-label': {
+				fontSize: fontSizes.sm,
+			},
+
+			'&:hover': {
+				background: colors.gray[1],
+			},
+		},
+
+		applyBtn: {
+			marginTop: spacing.xs,
+			width: widths.full,
+			background: pColor[0],
+
+			'&:hover': {
+				background: pColor[1],
+			},
+		},
+	};
+});
