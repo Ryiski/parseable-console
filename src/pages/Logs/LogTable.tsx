@@ -3,7 +3,7 @@ import { Tbody, Th, Thead } from '@/components/Table';
 import { useGetLogStreamSchema } from '@/hooks/useGetLogStreamSchema';
 import { useQueryLogs } from '@/hooks/useQueryLogs';
 import { Box, Center, Checkbox, Menu, Pagination, ScrollArea, Table, px, ActionIcon, Text } from '@mantine/core';
-import { Fragment, useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { FC } from 'react';
 import { LOG_QUERY_LIMITS, useLogsPageContext } from './Context';
 import LogRow from './LogRow';
@@ -107,16 +107,25 @@ const LogTable: FC = () => {
 
 	const { classes } = useLogTableStyles();
 
-	const { container, tableContainer, tableStyle, theadStyle, errorContainer, footerContainer } = classes;
+	const {
+		container,
+		innerContainer,
+		tableContainer,
+		tableStyle,
+		theadStyle,
+		errorContainer,
+		footerContainer,
+		paginationRow,
+	} = classes;
 
 	return (
 		<Box className={container}>
-			{!!pageLogData && <LogQuery />}
+			{Boolean(pageLogData) && <LogQuery />}
 			{!(logStreamError || logStreamSchemaError || logsError) ? (
-				!loading && !logsLoading && !!logsSchema && !!pageLogData ? (
-					!!logsSchema.fields.length && !!pageLogData.data.length ? (
-						<Fragment>
-							<ScrollArea className={tableContainer} type="never">
+				!loading && !logsLoading && Boolean(logsSchema) && Boolean(pageLogData) ? (
+					Boolean(logsSchema.fields.length) && Boolean(pageLogData.data.length) ? (
+						<Box className={innerContainer}>
+							<ScrollArea className={tableContainer} type="always">
 								<Table className={tableStyle}>
 									<Thead className={theadStyle}>
 										{renderTh}
@@ -141,11 +150,12 @@ const LogTable: FC = () => {
 										onChange={(page) => {
 											goToPage(page, pageLogData.limit);
 										}}
+										className={paginationRow}
 									/>
 								)}
 								<LimitControl value={pageLogData.limit} onChange={setPageLimit} />
 							</Box>
-						</Fragment>
+						</Box>
 					) : (
 						<EmptyBox message="No Data Available" />
 					)
@@ -226,8 +236,8 @@ const LimitControl: FC<LimitControlProps> = (props) => {
 		}
 	};
 
-	const { classes, cx } = useLogTableStyles();
-	const { limitContainer, limitBtn, limitBtnText, limitActive } = classes;
+	const { classes } = useLogTableStyles();
+	const { limitContainer, limitBtn, limitBtnText, limitActive, limitOption } = classes;
 
 	return (
 		<Box className={limitContainer}>
@@ -244,9 +254,7 @@ const LimitControl: FC<LimitControlProps> = (props) => {
 					{LOG_QUERY_LIMITS.map((limit) => {
 						return (
 							<Menu.Item
-								className={cx([], {
-									[limitActive]: value === limit,
-								})}
+								className={limit === value ? limitActive : limitOption}
 								key={limit}
 								onClick={() => onSelect(limit)}>
 								<Center>
